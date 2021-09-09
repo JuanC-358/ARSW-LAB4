@@ -34,18 +34,8 @@ public class filterB implements filter {
 
     @Override
     public Blueprint filterBlueprint(Blueprint bp) {
-        List<Point> lista = bp.getPoints();
-        List<Point> actualizada = new ArrayList<Point>();
-
-        for (int i = 0; i < lista.size(); i++) {
-            if (i % 2 == 0) {
-                actualizada.add(lista.get(i));
-            }
-        }
-
-        bp.setPoints(actualizada);
-
-        return bp;
+        // TODO Auto-generated method stub
+        return null;
     }
     
 }

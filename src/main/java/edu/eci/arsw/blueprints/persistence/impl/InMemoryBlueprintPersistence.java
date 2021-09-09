@@ -5,60 +5,85 @@
  */
 package edu.eci.arsw.blueprints.persistence.impl;
 
+import edu.eci.arsw.blueprints.filter.filter;
 import edu.eci.arsw.blueprints.model.Blueprint;
 import edu.eci.arsw.blueprints.model.Point;
 import edu.eci.arsw.blueprints.persistence.BlueprintNotFoundException;
 import edu.eci.arsw.blueprints.persistence.BlueprintPersistenceException;
 import edu.eci.arsw.blueprints.persistence.BlueprintsPersistence;
-import org.springframework.stereotype.Component;
-
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 /**
  *
  * @author hcadavid
  */
-public class InMemoryBlueprintPersistence implements BlueprintsPersistence{
+@Component("inmemory")
+public class InMemoryBlueprintPersistence implements BlueprintsPersistence {
 
-    private final Map<Tuple<String,String>,Blueprint> blueprints=new HashMap<>();
+    @Autowired
+    private filter filter;
+
+    private final Map<Tuple<String, String>, Blueprint> blueprints = new ConcurrentHashMap<>();
 
     public InMemoryBlueprintPersistence() {
-        //load stub data
-        Point[] pts=new Point[]{new Point(140, 140),new Point(115, 115)};
-        Blueprint bp=new Blueprint("_authorname_", "_bpname_ ",pts);
-        blueprints.put(new Tuple<>(bp.getAuthor(),bp.getName()), bp);
-        
-    }    
-    
+        // load stub data
+        Point[] pts = new Point[] { new Point(140, 140), new Point(115, 115) };
+        Blueprint bp = new Blueprint("authorname", "bpname", pts);
+        Blueprint bp2 = new Blueprint("Mario", "Satanas", pts);
+        Blueprint bp3 = new Blueprint("Gabriel", "100 años", pts);
+        Blueprint bp4 = new Blueprint("Gabriel", "Cronicas de una muerte", pts);
+        blueprints.put(new Tuple<>(bp.getAuthor(), bp.getName()), bp);
+        blueprints.put(new Tuple<>(bp2.getAuthor(), bp2.getName()), bp2);
+        blueprints.put(new Tuple<>(bp3.getAuthor(), bp3.getName()), bp3);
+        blueprints.put(new Tuple<>(bp4.getAuthor(), bp4.getName()), bp4);
+    }
+
     @Override
     public void saveBlueprint(Blueprint bp) throws BlueprintPersistenceException {
-        if (blueprints.containsKey(new Tuple<>(bp.getAuthor(),bp.getName()))){
-            throw new BlueprintPersistenceException("The given blueprint already exists: "+bp);
+        if (blueprints.containsKey(new Tuple<>(bp.getAuthor(), bp.getName()))) {
+            throw new BlueprintPersistenceException("The given blueprint already exists: " + bp);
+        } else {
+            blueprints.put(new Tuple<>(bp.getAuthor(), bp.getName()), bp);
         }
-        else{
-            blueprints.put(new Tuple<>(bp.getAuthor(),bp.getName()), bp);
-        }        
     }
 
     @Override
     public Blueprint getBlueprint(String author, String bprintname) throws BlueprintNotFoundException {
-        return blueprints.get(new Tuple<>(author, bprintname));
-    }
-
-    @Override
-    public Set<Blueprint> getAllBlueprints() throws BlueprintNotFoundException {
-        return blueprints.values().stream().collect(Collectors.toSet());
+        try {
+            return blueprints.get(new Tuple<>(author, bprintname));
+        } catch (Exception e) {
+            throw new BlueprintNotFoundException(e.toString());
+        }
     }
 
     @Override
     public Set<Blueprint> getBlueprintsByAuthor(String author) throws BlueprintNotFoundException {
-        return blueprints.values().stream().filter(x -> x.getAuthor().equals(author)).collect(Collectors.toSet());
+        Set<Blueprint> setBluePrints = new HashSet<Blueprint>();
+        Set<Tuple<String, String>> setKeys = blueprints.keySet();
+        for (Tuple<String, String> tuple : setKeys) {
+            System.out.println(tuple.getElem1());
+            if (tuple.getElem1().equals(author)) {
+                setBluePrints.add(blueprints.get(tuple));
+                System.out.println("Entre");
+            }
+        }
+        return filter.filterBluePrints(setBluePrints);
     }
 
-    
-    
+    @Override
+    public Set<Blueprint> getAllBluePrints() throws BlueprintNotFoundException {
+        Set<Blueprint> setBluePrints = new HashSet<Blueprint>();
+        Set<Tuple<String, String>> setKeys = blueprints.keySet();
+        for (Tuple<String, String> tuple : setKeys) {
+            setBluePrints.add(blueprints.get(tuple));
+        }
+        return setBluePrints;
+    }
 }

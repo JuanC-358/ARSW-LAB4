@@ -22,25 +22,17 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class BlueprintsServices {
-   
+
     @Autowired
-    BlueprintsPersistence bpp=null;
-    
-    public void addNewBlueprint(Blueprint bp){
-         try {
-            bpp.saveBlueprint(bp);
-        } catch (BlueprintPersistenceException e) {
-            e.printStackTrace();
-        }
+    BlueprintsPersistence bpp = null;
+
+    public void addNewBlueprint(Blueprint bp) throws BlueprintPersistenceException {
+        System.out.println(bp.getAuthor()+" "+bp.getName());
+        bpp.saveBlueprint(bp);
     }
     
-    public Set<Blueprint> getAllBlueprints(){
-        try {
-            return bpp.getAllBlueprints();
-        } catch (BlueprintNotFoundException e) {
-            e.printStackTrace();
-        }
-        return null;
+    public Set<Blueprint> getAllBlueprints() throws BlueprintNotFoundException{
+        return bpp.getAllBluePrints();
     }
     
     /**
@@ -51,12 +43,7 @@ public class BlueprintsServices {
      * @throws BlueprintNotFoundException if there is no such blueprint
      */
     public Blueprint getBlueprint(String author,String name) throws BlueprintNotFoundException{
-         try {
-            return bpp.getBlueprint(author,name);
-        } catch (BlueprintNotFoundException e) {
-            throw new BlueprintNotFoundException("Not Found."); 
-        }
-        //return null; 
+        return bpp.getBlueprint(author, name);
     }
     
     /**
@@ -66,12 +53,7 @@ public class BlueprintsServices {
      * @throws BlueprintNotFoundException if the given author doesn't exist
      */
     public Set<Blueprint> getBlueprintsByAuthor(String author) throws BlueprintNotFoundException{
-        try {
-            return bpp.getBlueprintsByAuthor(author);
-        } catch (BlueprintNotFoundException e) {
-            throw new BlueprintNotFoundException("Not Found."); 
-        }
-        //return null; 
+        return bpp.getBlueprintsByAuthor(author);
     }
     
 }
